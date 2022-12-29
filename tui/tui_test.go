@@ -249,7 +249,7 @@ func TestConfirmDeletion(t *testing.T) {
 	ui := getAnalyzedPathMockedApp(t, true, true, true)
 
 	ui.table.Select(1, 0)
-	ui.confirmDeletion(false)
+	ui.confirmDeletion(false,false)
 
 	assert.True(t, ui.pages.HasPage("confirm"))
 }
@@ -258,7 +258,7 @@ func TestConfirmDeletionBW(t *testing.T) {
 	ui := getAnalyzedPathMockedApp(t, false, true, true)
 
 	ui.table.Select(1, 0)
-	ui.confirmDeletion(false)
+	ui.confirmDeletion(false,false)
 
 	assert.True(t, ui.pages.HasPage("confirm"))
 }
@@ -267,7 +267,7 @@ func TestConfirmEmpty(t *testing.T) {
 	ui := getAnalyzedPathMockedApp(t, false, true, true)
 
 	ui.table.Select(1, 0)
-	ui.confirmDeletion(true)
+	ui.confirmDeletion(true,false)
 
 	assert.True(t, ui.pages.HasPage("confirm"))
 }
@@ -277,7 +277,7 @@ func TestConfirmEmptyMarked(t *testing.T) {
 
 	ui.table.Select(1, 0)
 	ui.markedRows[1] = struct{}{}
-	ui.confirmDeletion(true)
+	ui.confirmDeletion(true,false)
 
 	assert.True(t, ui.pages.HasPage("confirm"))
 }
@@ -287,7 +287,7 @@ func TestConfirmDeletionMarked(t *testing.T) {
 
 	ui.table.Select(1, 0)
 	ui.markedRows[1] = struct{}{}
-	ui.confirmDeletion(false)
+	ui.confirmDeletion(false,false)
 
 	assert.True(t, ui.pages.HasPage("confirm"))
 }
@@ -297,7 +297,7 @@ func TestConfirmDeletionMarkedBW(t *testing.T) {
 
 	ui.table.Select(1, 0)
 	ui.markedRows[1] = struct{}{}
-	ui.confirmDeletion(false)
+	ui.confirmDeletion(false,false)
 
 	assert.True(t, ui.pages.HasPage("confirm"))
 }
@@ -313,7 +313,7 @@ func TestDeleteSelected(t *testing.T) {
 
 	ui.table.Select(0, 0)
 
-	ui.deleteSelected(false)
+	ui.deleteSelected(false,false)
 
 	<-ui.done
 
@@ -335,7 +335,7 @@ func TestDeleteSelectedWithErr(t *testing.T) {
 
 	ui.table.Select(0, 0)
 
-	ui.delete(false)
+	ui.delete(false,false)
 
 	<-ui.done
 
@@ -359,7 +359,7 @@ func TestDeleteMarkedWithErr(t *testing.T) {
 	ui.table.Select(0, 0)
 	ui.markedRows[0] = struct{}{}
 
-	ui.deleteMarked(false)
+	ui.deleteMarked(false,false)
 
 	<-ui.done
 

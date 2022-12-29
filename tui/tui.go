@@ -41,8 +41,8 @@ type UI struct {
 	sortBy                  string
 	sortOrder               string
 	done                    chan struct{}
-	remover                 func(fs.Item, fs.Item) error
-	emptier                 func(fs.Item, fs.Item) error
+	remover                 func(fs.Item, fs.Item, bool, fs.HardLinkedItems) error
+	emptier                 func(fs.Item, fs.Item, bool, fs.HardLinkedItems) error
 	getter                  device.DevicesInfoGetter
 	exec                    func(argv0 string, argv []string, envv []string) error
 	linkedItems             fs.HardLinkedItems
@@ -244,15 +244,15 @@ func (ui *UI) deviceItemSelected(row, column int) {
 	}
 }
 
-func (ui *UI) confirmDeletion(shouldEmpty bool) {
+func (ui *UI) confirmDeletion(shouldEmpty bool, shouldDeleteHardlinks bool) {
 	if len(ui.markedRows) > 0 {
-		ui.confirmDeletionMarked(shouldEmpty)
+		ui.confirmDeletionMarked(shouldEmpty, shouldDeleteHardlinks)
 	} else {
-		ui.confirmDeletionSelected(shouldEmpty)
+		ui.confirmDeletionSelected(shouldEmpty, shouldDeleteHardlinks)
 	}
 }
 
-func (ui *UI) confirmDeletionSelected(shouldEmpty bool) {
+func (ui *UI) confirmDeletionSelected(shouldEmpty bool, shouldDeleteHardlinks bool) {
 	row, column := ui.table.GetSelection()
 	selectedFile := ui.table.GetCell(row, column).GetReference().(fs.Item)
 	var action string
@@ -260,6 +260,9 @@ func (ui *UI) confirmDeletionSelected(shouldEmpty bool) {
 		action = "empty"
 	} else {
 		action = "delete"
+	}
+	if shouldDeleteHardlinks {
+		action += " (including hardlinks)"
 	}
 	modal := tview.NewModal().
 		SetText(
@@ -276,7 +279,7 @@ func (ui *UI) confirmDeletionSelected(shouldEmpty bool) {
 				ui.askBeforeDelete = false
 				fallthrough
 			case 0:
-				ui.deleteSelected(shouldEmpty)
+				ui.deleteSelected(shouldEmpty, shouldDeleteHardlinks)
 			}
 			ui.pages.RemovePage("confirm")
 		})

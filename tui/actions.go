@@ -136,15 +136,15 @@ func (ui *UI) ReadAnalysis(input io.Reader) error {
 	return nil
 }
 
-func (ui *UI) delete(shouldEmpty bool) {
+func (ui *UI) delete(shouldEmpty bool, shouldDeleteHardlinks bool) {
 	if len(ui.markedRows) > 0 {
-		ui.deleteMarked(shouldEmpty)
+		ui.deleteMarked(shouldEmpty, shouldDeleteHardlinks)
 	} else {
-		ui.deleteSelected(shouldEmpty)
+		ui.deleteSelected(shouldEmpty, shouldDeleteHardlinks)
 	}
 }
 
-func (ui *UI) deleteSelected(shouldEmpty bool) {
+func (ui *UI) deleteSelected(shouldEmpty bool, shouldDeleteHardlinks bool) {
 	row, column := ui.table.GetSelection()
 	selectedItem := ui.table.GetCell(row, column).GetReference().(fs.Item)
 
@@ -156,6 +156,11 @@ func (ui *UI) deleteSelected(shouldEmpty bool) {
 		action = "delete "
 		acting = "deleting"
 	}
+	if shouldDeleteHardlinks {
+		action += " (incl. hlinks) "
+		acting += " (incl. hlinks)"
+	}
+	
 	modal := tview.NewModal().SetText(
 		// nolint: staticcheck // Why: fixed string
 		strings.Title(acting) +
@@ -177,7 +182,7 @@ func (ui *UI) deleteSelected(shouldEmpty bool) {
 		deleteItems = append(deleteItems, selectedItem)
 	}
 
-	var deleteFun func(fs.Item, fs.Item) error
+	var deleteFun func(fs.Item, fs.Item, bool, fs.HardLinkedItems) error
 	if shouldEmpty && !selectedItem.IsDir() {
 		deleteFun = ui.emptier
 	} else {
@@ -185,7 +190,7 @@ func (ui *UI) deleteSelected(shouldEmpty bool) {
 	}
 	go func() {
 		for _, item := range deleteItems {
-			if err := deleteFun(currentDir, item); err != nil {
+			if err := deleteFun(currentDir, item, shouldDeleteHardlinks, ui.linkedItems); err != nil {
 				msg := "Can't " + action + tview.Escape(selectedItem.GetName())
 				ui.app.QueueUpdateDraw(func() {
 					ui.pages.RemovePage(acting)

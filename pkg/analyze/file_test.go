@@ -230,7 +230,7 @@ func TestRemoveFile(t *testing.T) {
 	dir.Files = fs.Files{subdir}
 	subdir.Files = fs.Files{file}
 
-	err := RemoveItemFromDir(subdir, file)
+	err := RemoveItemFromDir(subdir, file, false, make(fs.HardLinkedItems))
 	assert.Nil(t, err)
 
 	assert.Equal(t, 0, len(subdir.Files))
@@ -274,7 +274,7 @@ func TestTruncateFile(t *testing.T) {
 	dir.Files = fs.Files{subdir}
 	subdir.Files = fs.Files{file}
 
-	err := EmptyFileFromDir(subdir, file)
+	err := EmptyFileFromDir(subdir, file, false, make(fs.HardLinkedItems))
 
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(subdir.Files))
@@ -315,7 +315,7 @@ func TestTruncateFileWithErr(t *testing.T) {
 	dir.Files = fs.Files{subdir}
 	subdir.Files = fs.Files{file}
 
-	err := EmptyFileFromDir(subdir, file)
+	err := EmptyFileFromDir(subdir, file, false, make(fs.HardLinkedItems))
 
 	assert.Contains(t, err.Error(), "no such file or directory")
 }

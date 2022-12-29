@@ -21,7 +21,7 @@ func (ui *UI) fileItemMarked(row int) {
 	ui.table.Select(min(row+1, ui.table.GetRowCount()-1), 0)
 }
 
-func (ui *UI) deleteMarked(shouldEmpty bool) {
+func (ui *UI) deleteMarked(shouldEmpty bool, shouldDeleteHardlinks bool) {
 	var action, acting string
 	if shouldEmpty {
 		action = "empty "
@@ -29,6 +29,10 @@ func (ui *UI) deleteMarked(shouldEmpty bool) {
 	} else {
 		action = "delete "
 		acting = "deleting"
+	}
+	if shouldDeleteHardlinks {
+		action += " (incl. hlinks) "
+		acting += " (incl. hlinks)"
 	}
 
 	modal := tview.NewModal()
@@ -43,7 +47,7 @@ func (ui *UI) deleteMarked(shouldEmpty bool) {
 
 	currentRow, _ := ui.table.GetSelection()
 
-	var deleteFun func(fs.Item, fs.Item) error
+	var deleteFun func(fs.Item, fs.Item, bool, fs.HardLinkedItems) error
 
 	go func() {
 		for _, one := range markedItems {
@@ -76,7 +80,7 @@ func (ui *UI) deleteMarked(shouldEmpty bool) {
 			}
 
 			for _, item := range deleteItems {
-				if err := deleteFun(currentDir, item); err != nil {
+				if err := deleteFun(currentDir, item, shouldDeleteHardlinks, ui.linkedItems); err != nil {
 					msg := "Can't " + action + tview.Escape(one.GetName())
 					ui.app.QueueUpdateDraw(func() {
 						ui.pages.RemovePage(acting)
@@ -103,12 +107,15 @@ func (ui *UI) deleteMarked(shouldEmpty bool) {
 	}()
 }
 
-func (ui *UI) confirmDeletionMarked(shouldEmpty bool) {
+func (ui *UI) confirmDeletionMarked(shouldEmpty bool, shouldDeleteHardlinks bool) {
 	var action string
 	if shouldEmpty {
 		action = "empty"
 	} else {
 		action = "delete"
+	}
+	if shouldDeleteHardlinks {
+		action += " (including hardlinks)"
 	}
 
 	modal := tview.NewModal().
@@ -119,13 +126,14 @@ func (ui *UI) confirmDeletionMarked(shouldEmpty bool) {
 				"[::-] items?",
 		).
 		AddButtons([]string{"yes", "no", "don't ask me again"}).
+
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 			switch buttonIndex {
 			case 2:
 				ui.askBeforeDelete = false
 				fallthrough
 			case 0:
-				ui.deleteMarked(shouldEmpty)
+				ui.deleteMarked(shouldEmpty, shouldDeleteHardlinks)
 			}
 			ui.pages.RemovePage("confirm")
 		})

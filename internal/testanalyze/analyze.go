@@ -81,6 +81,6 @@ func (a *MockedAnalyzer) GetDone() common.SignalGroup {
 func (a *MockedAnalyzer) ResetProgress() {}
 
 // RemoveItemFromDirWithErr returns error
-func RemoveItemFromDirWithErr(dir fs.Item, file fs.Item) error {
+func RemoveItemFromDirWithErr(dir fs.Item, file fs.Item, shouldDeleteHardlinks bool, linkedItems fs.HardLinkedItems) error {
 	return errors.New("Failed")
 }

@@ -134,9 +134,13 @@ func (ui *UI) handleLeftRight(key *tcell.EventKey) *tcell.EventKey {
 func (ui *UI) handleMainActions(key *tcell.EventKey) *tcell.EventKey {
 	switch key.Rune() {
 	case 'd':
-		ui.handleDelete(false)
+		ui.handleDelete(false, false)
 	case 'e':
-		ui.handleDelete(true)
+		ui.handleDelete(true, false)
+	case 'D':
+		ui.handleDelete(false, true)
+	case 'E':
+		ui.handleDelete(true, true)
 	case 'v':
 		ui.showFile()
 	case 'o':
@@ -221,7 +225,7 @@ func (ui *UI) handleRight() {
 	}
 }
 
-func (ui *UI) handleDelete(shouldEmpty bool) {
+func (ui *UI) handleDelete(shouldEmpty bool, shouldDeleteHardlinks bool) {
 	if ui.currentDir == nil {
 		return
 	}
@@ -233,9 +237,9 @@ func (ui *UI) handleDelete(shouldEmpty bool) {
 	}
 
 	if ui.askBeforeDelete {
-		ui.confirmDeletion(shouldEmpty)
+		ui.confirmDeletion(shouldEmpty, shouldDeleteHardlinks)
 	} else {
-		ui.delete(shouldEmpty)
+		ui.delete(shouldEmpty, shouldDeleteHardlinks)
 	}
 }
 

@@ -26,7 +26,9 @@ const helpText = `     [::b]up/down, k/j    [white:black:-]Move cursor up/down
 
 Item under cursor:
                [::b]d     [white:black:-]Delete file or directory
+               [::b]D     [white:black:-]Delete file or directory, including hardlinks
                [::b]e     [white:black:-]Empty file or directory
+               [::b]E     [white:black:-]Empty file or directory, including hardlinks
 			   [::b]space [white:black:-]Mark file or directory for deletion
                [::b]v     [white:black:-]Show content of file
                [::b]o     [white:black:-]Open file or directory in external program

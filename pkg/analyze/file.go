@@ -204,8 +204,25 @@ func (f *Dir) UpdateStats(linkedItems fs.HardLinkedItems) {
 	f.Usage = totalUsage
 }
 
+// Recursively remove all hardlinks to item's inode TODO: errors, cleanup linkedItems
+func RemoveHardlinks(item fs.Item, linkedItems fs.HardLinkedItems) {
+	if !item.IsDir() {
+		for _, hlink := range linkedItems[item.GetMultiLinkedInode()] {
+			os.Remove(hlink.GetPath())
+		}
+	} else {
+		for _, file := range item.GetFiles() {
+			RemoveHardlinks(file,linkedItems)
+		}
+	}
+}
+
 // RemoveItemFromDir removes item from dir
-func RemoveItemFromDir(dir fs.Item, item fs.Item) error {
+func RemoveItemFromDir(dir fs.Item, item fs.Item, shouldDeleteHardlinks bool, linkedItems fs.HardLinkedItems) error {
+	if shouldDeleteHardlinks {
+		// can't use os.RemoveAll :(
+		RemoveHardlinks(item,linkedItems)
+	}
 	err := os.RemoveAll(item.GetPath())
 	if err != nil {
 		return err
@@ -228,7 +245,15 @@ func RemoveItemFromDir(dir fs.Item, item fs.Item) error {
 }
 
 // EmptyFileFromDir empty file from dir
-func EmptyFileFromDir(dir fs.Item, file fs.Item) error {
+func EmptyFileFromDir(dir fs.Item, file fs.Item, shouldDeleteHardlinks bool, linkedItems fs.HardLinkedItems) error {
+	if shouldDeleteHardlinks {
+		// can't use os.Truncate :(
+		if file.IsDir() {
+			for _, subFile := range file.GetFiles() {
+				RemoveHardlinks(subFile,linkedItems)
+			}
+		}
+	}
 	err := os.Truncate(file.GetPath(), 0)
 	if err != nil {
 		return err
