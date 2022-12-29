@@ -339,7 +339,7 @@ func (ui *UI) showInfo() {
 	if selectedFile.GetMultiLinkedInode() > 0 {
 		linkedItems := ui.linkedItems[selectedFile.GetMultiLinkedInode()]
 		linesCount += 2 + len(linkedItems)
-		content += "\nHard-linked files:\n"
+		content += fmt.Sprintf("\nHard-linked files (%d):\n", len(linkedItems))
 		for _, linkedItem := range linkedItems {
 			content += "\t" + linkedItem.GetPath() + "\n"
 		}
